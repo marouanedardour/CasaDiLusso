@@ -1,0 +1,203 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>CASA DI LUSSO | Élégance et Design</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css_new/main.css' %}?v={% now 'U' %}">    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+</head>
+<body>
+
+<header class="main-header">
+    <div class="logo-area">
+        <h1 class="brand-title">CASA DI LUSSO</h1>
+    </div>
+    <nav class="nav-menu">
+        <div class="hamburger" onclick="toggleSideMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        {% include 'search_partial.html' %}
+        <a href="{% url 'home' %}" class="nav-link">HOME</a>
+        <a href="{% url 'about' %}" class="nav-link">ABOUT US</a>
+        <a href="{% url 'contact' %}" class="nav-link">CONTACT</a>
+        <div class="user-actions">
+            {% if user.is_authenticated %}
+                <span class="welcome-text">
+                    Hello, {{ user.username }}
+                </span>
+                <a href="{% url 'logout' %}" class="nav-link exit">
+                    EXIT
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-link">
+                    LOGIN
+                </a>
+                <a href="{% url 'register' %}" class="nav-link">
+                    SIGN UP
+                </a>
+            {% endif %}
+        </div>
+    </nav>
+    <div id="side-menu" class="side-menu">
+        <a href="javascript:void(0)" 
+           class="close-btn" 
+           onclick="toggleSideMenu()">
+           &times;
+        </a>
+        <ul class="side-nav-list">
+            <li><a href="{% url 'home' %}?cat=bathroom">Bathroom</a></li>
+            <li><a href="{% url 'home' %}?cat=kitchen">Kitchen</a></li>
+            <li><a href="{% url 'home' %}?cat=furniture">Furniture</a></li>
+            <li><a href="{% url 'home' %}?cat=lighting">Lighting</a></li>
+            <li><a href="{% url 'home' %}?cat=materials">Materials</a></li>
+            <li><a href="{% url 'home' %}?cat=wellness">Wellness</a></li>
+        </ul>
+    </div>
+</header>
+
+<div id="main-content">
+    {% block content %}
+    {% endblock %}
+</div>
+
+<div class="chat-bubble" onclick="toggleChat(event)">💬</div>
+<div class="chat-window" id="chatWindow">
+    <div class="chat-header" onclick="toggleChat(event)">Casa Di Lusso ×</div>
+    <div id="chat-messages" class="chat-messages">
+        <p class="bot-msg">Bonjour ! Comment puis-je vous aider aujourd'hui ?</p>
+    </div>
+    <div class="chat-input-area">
+        {% csrf_token %}
+        <input type="text" id="chat-input" placeholder="Votre message..." onkeypress="handleKeyPress(event)">
+        <button class="send-btn" onclick="sendMessage()">SEND</button>
+    </div>
+</div>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+
+<script>
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    function openChatWindow(){
+        const win = document.getElementById('chatWindow');
+        win.style.display = 'flex';
+    }
+    function toggleChat(event){
+        if(event){
+            event.stopPropagation();
+        }
+        const win = document.getElementById('chatWindow');
+        if(win.style.display === 'flex'){
+            win.style.display='none';
+        }
+        else{
+            win.style.display='flex';
+        }
+    }
+    document.addEventListener('click', function(e){
+        const win = document.getElementById('chatWindow');
+        const bubble = document.querySelector('.chat-bubble');
+        if(
+            win.style.display === 'flex'
+            &&
+            !win.contains(e.target)
+            &&
+            !bubble.contains(e.target)
+        ){
+            win.style.display='none';
+        }
+    });
+    function handleKeyPress(e){
+        if(e.key==="Enter"){
+            sendMessage();
+        }
+    }
+
+    let chatHistory = [];
+    async function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const box = document.getElementById('chat-messages');
+        const msg = input.value.trim();
+        if (!msg) return;
+        chatHistory.push({"role": "user", "content": msg});
+        box.innerHTML += `<p class="user-msg">Vous: ${msg}</p>`;
+        input.value = "";
+        box.scrollTop = box.scrollHeight;
+        try {
+            let lang = navigator.language.split('-')[0];
+            let response = await fetch('/chatbot/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken},
+                body: JSON.stringify({'messages': chatHistory, 'lang': lang})
+            });
+            let data = await response.json();
+            let reply = data.reply;
+            chatHistory.push({"role": "assistant", "content": reply});
+            const formattedReply = reply.replace(/IMAGE:(https?:\/\/[^\s|]+)\|LINK:(https?:\/\/[^\s]+)/g,function(match,image,link){
+                return `
+                <div class="bot-suggestion">
+                    <img 
+                    src="${image}"
+                    style="
+                    width:150px;
+                    border-radius:10px;
+                    cursor:pointer;
+                    margin:5px 0;
+                    "
+                    onclick="window.location.href='${link}'">   
+                    </div>
+            `;
+
+            });
+            box.innerHTML += `<p class="bot-msg">Casa: ${formattedReply}</p>`;
+            box.scrollTop = box.scrollHeight;
+        } catch (error) {
+            box.innerHTML += `<p class="bot-msg" style="color:red;">Erreur de connexion.</p>`;
+        }
+    }
+    function goProduct(url){
+    window.location.assign(url);
+    }
+    
+</script>
+
+<script>
+    let lastScrollTop = 0;
+    const header = document.querySelector('.main-header');
+    window.addEventListener('scroll', function() {
+        let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+        if (currentScroll > lastScrollTop) {
+            header.classList.add('header-hidden');
+        } else {
+            header.classList.remove('header-hidden');
+        }
+        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+    }, false);
+    
+</script>
+
+<script>
+function toggleSideMenu() {
+    const menu = document.getElementById("side-menu");
+    menu.style.width = (menu.style.width === "250px") ? "0" : "250px";
+}
+document.addEventListener('click', function(event) {
+        const sideMenu = document.getElementById("side-menu");
+        const hamburger = document.querySelector(".hamburger");
+            if (sideMenu.style.width === "250px" && 
+            !sideMenu.contains(event.target) && 
+            !hamburger.contains(event.target)) {
+            sideMenu.style.width = "0";
+        }
+    });
+</script>
+
+</body>
+</html>

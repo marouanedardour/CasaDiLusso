@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="full-screen-section">
+    <img src="{% static 'images/logocasa.png' %}" alt="Logo" class="top-left-logo">
+    
+    <video autoplay muted loop playsinline class="bg-video">
+        <source src="{% static 'images/CasaDiLussovideo.mp4' %}" type="video/mp4">
+    </video>
+
+    <div class="video-overlay-text">
+        <span class="text-item">Luxury</span>
+        <span class="text-item">Quality</span>
+        <span class="text-item">Expertise</span>
+        <span class="text-item">Beauty</span>
+    </div>
+</section>
+
+<section class="content-section">
+    <img src="{% static 'images/visualselection.png' %}" alt="Visual Scheme" class="scheme-image">
+    
+    <div class="luxury-buttons">
+        <button class="luxury-btn">OUR STORY</button>
+        <button class="luxury-btn">HOW TO SHOP</button>
+    </div>
+</section>
+{% endblock %}

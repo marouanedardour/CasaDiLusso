@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="luxury-container" style="max-width: 450px; margin: 50px auto;">
+    <div style="background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #e0d8cf;">
+        <h2 style="font-family: 'Playfair Display', serif; text-align: center; color: #c5a059; margin-bottom: 25px;">Inscription</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }} 
+            <button type="submit">S'inscrire</button>
+        </form>
+
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="{% url 'login' %}" style="color: #666; text-decoration: none; font-size: 0.9rem;">← Retour à la connexion</a>
+        </div>
+    </div>
+</div>
+<div style="margin-top: 25px; text-align: center;">
+    <p style="color: #666; font-size: 0.9rem;">
+        Déjà membre ? 
+        <a href="{% url 'login' %}" style="color: #c5a059; font-weight: bold; text-decoration: none;">
+            Se connecter
+        </a>
+    </p>
+</div>
+{% endblock %}
+

@@ -1,0 +1,26 @@
+{% load static %}
+<div class="search-container-nav">
+    <button class="search-icon-btn" id="searchTrigger">
+        <img src="{% static 'images/search.png' %}" alt="Search" style="width: 45px; height: 45px;">
+    </button>
+    
+    <form action="{% url 'smart_search' %}" method="GET" class="search-input-hidden" id="searchInput">
+        <input type="text" id="liveSearchInput" name="q" placeholder="Rechercher..." autocomplete="off">
+        <div id="suggestions" style="position:absolute; background:white; width:100%; z-index:1000; border: 1px solid #ddd;"></div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('click', function(e) {
+        const searchInput = document.getElementById('searchInput');
+        const searchTrigger = document.getElementById('searchTrigger');
+        if (!searchInput.contains(e.target) && e.target !== searchTrigger) {
+            searchInput.classList.remove('show');
+        }
+    });
+
+    document.getElementById('searchTrigger').addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('searchInput').classList.toggle('show');
+    });
+</script>

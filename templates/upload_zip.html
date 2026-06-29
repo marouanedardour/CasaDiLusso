@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Importation ZIP - {{ produit.nom }}</title>
+    <style>
+        body { font-family: sans-serif; padding: 50px; text-align: center; }
+        .box { border: 2px dashed #ccc; padding: 20px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <h1>Importation de photos pour : {{ produit.nom }}</h1>
+    <div class="box">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>Veuillez sélectionner votre fichier .zip :</p>
+            <input type="file" name="zip_file" accept=".zip" required>
+            <br><br>
+            <button type="submit">Charger et distribuer les images</button>
+        </form>
+    </div>
+    <br>
+    <a href="/admin/immobilier/produit/">Retour à la liste</a>
+</body>
+</html>

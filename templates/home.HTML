@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="luxury-container">
+    {% if user.is_authenticated %}
+        <div class="welcome-banner">
+            <p>Welcome, <strong>{{ user.username }}</strong>. Delighted to see you again at Casa Di Lusso.</p>
+        </div>
+    {% endif %}
+
+    <div class="swiper unique-top-slider">
+        <div class="swiper-wrapper">
+            {% for p in produits %}
+            <div class="swiper-slide">
+                <div class="product-card-arch">
+                    {% if p.marque and p.marque.logo %}
+                        <img src="{{ p.marque.logo.url }}" class="card-logo-overlay">
+                    {% endif %}
+                    <a href="{% url 'product_detail' p.id %}">
+                        <img src="{{ p.image_couverture.url }}" class="arch-img">
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="divider-section">
+        <div class="gold-divider"></div>
+        <h2 class="section-title">All our collections</h2>
+    </div>
+
+    <div class="product-grid">
+        {% for produit in produits %}
+        <div class="product-card-arch">
+            {% if produit.marque and produit.marque.logo %}
+                <img src="{{ produit.marque.logo.url }}" 
+                    class="card-logo-overlay">
+            {% endif %}
+            <a href="{% url 'product_detail' produit.id %}">
+                <img src="{{ produit.image_couverture.url }}" class="arch-img">
+                <div class="arch-title-bottom">
+                    {{ produit.nom }}
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+  var topSwiper = new Swiper(".unique-top-slider", {
+    slidesPerView: 4,
+    centeredSlides: true,
+    spaceBetween: 40,
+    loop: true,
+    autoplay: { delay: 3000, disableOnInteraction: false },
+    speed: 1000,
+    on: {
+      init: function () { applyLuxuryEffect(this); },
+      slideChange: function () { applyLuxuryEffect(this); }
+    }
+  });
+
+  function applyLuxuryEffect(swiper) {
+    const slides = document.querySelectorAll('.unique-top-slider .swiper-slide');
+    slides.forEach((slide, index) => {
+      const dist = Math.abs(index - swiper.activeIndex);
+      if (dist === 0) {
+        slide.style.filter = "blur(0px)";
+        slide.style.opacity = "1";
+        slide.style.transform = "scale(1)";
+      } else {
+        slide.style.filter = "blur(2px)";
+        slide.style.opacity = "0.6";
+        slide.style.transform = "scale(0.9)";
+      }
+    });
+  }
+</script>
+
+{% endblock %}

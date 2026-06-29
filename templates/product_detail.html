@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="product-page">
+    <div class="hero-container">
+        {% if produit.image_couverture %}
+            <img src="{{ produit.image_couverture.url }}" alt="{{ produit.nom }}" class="hero-bg">
+        {% endif %}
+        
+        {% if produit.marque.logo %}
+            <div class="hero-logo">
+                <img src="{{ produit.marque.logo.url }}" alt="{{ produit.marque.nom }}">
+            </div>
+        {% endif %}
+
+        <div class="hero-content">
+            <h1 class="hero-title">{{ produit.nom }}</h1>
+            <h3 class="hero-subtitle">{{ produit.marque.nom }}</h3>
+        </div>
+    </div>
+
+    <div class="luxury-container">
+        <p class="product-desc">{{ produit.description }}</p>
+        
+        <div class="price-tag">
+            {% if produit.prix %} {{ produit.prix }} MAD {% else %} Prix sur demande {% endif %}
+        </div>
+        
+        <div class="gallery-grid">
+            {% for image in page_obj %}
+                <div class="gallery-item" style="position: relative;">
+                    <img src="{{ image.image.url }}" alt="Image" class="gallery-img">
+                        <button class="chat-overlay-btn"
+                        onclick="event.stopPropagation(); openChatAndAsk(
+                        '{{ produit.nom|escapejs }}',
+                        '{{ image.image.url }}'
+                        )">
+                        💬
+                        </button>
+                        <button class="ask-bot-btn" onclick="openChatWindow(); askAboutProduct('{{ produit.nom }}')">
+                            Conseillez-moi sur ce produit
+                        </button>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="pagination">
+            <a href="{% url 'home' %}" class="btn-luxury">← RETOUR</a>
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="btn-luxury">PREC</a>
+            {% endif %}
+            
+            <span style="font-family: var(--font-body);">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="btn-luxury">SUIV</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    const images = Array.from(document.querySelectorAll('.gallery-img'));
+    let currentIndex = 0;
+    let currentModal = null; 
+
+    images.forEach((img, index) => {
+        img.onclick = () => {
+            currentIndex = index;
+            showModal(images[currentIndex].src);
+        };
+    });
+
+    function showModal(src) {
+        currentModal = document.createElement('div');
+        currentModal.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:flex; justify-content:center; align-items:center; z-index:9999;";
+        
+        const newImg = document.createElement('img');
+        newImg.src = src;
+        newImg.style.cssText = "max-width:90%; max-height:80%; border:2px solid white;";
+        
+        currentModal.onclick = (e) => {
+            if(e.target === currentModal) closeModal();
+        };
+
+        currentModal.appendChild(newImg);
+        document.body.appendChild(currentModal);
+
+        document.onkeydown = (e) => {
+            if (e.key === "ArrowRight") changeImage(1);
+            if (e.key === "ArrowLeft") changeImage(-1);
+            if (e.key === "Escape") closeModal();
+        };
+    }
+
+    function askAboutProduct(productName) {
+        const chatWin = document.getElementById('chatWindow');
+        if (chatWin.style.display !== 'flex') {
+            chatWin.style.display = 'flex';
+        }
+        const input = document.getElementById('chat-input');
+        input.value = `Bonjour, je souhaite avoir des conseils sur le produit : ${productName}. `;
+        input.focus();
+    }
+
+    function changeImage(step) {
+        currentIndex = (currentIndex + step + images.length) % images.length;
+        currentModal.querySelector('img').src = images[currentIndex].src;
+    }
+
+    function closeModal() {
+        if (currentModal) {
+            currentModal.remove();
+            document.onkeydown = null; 
+        }
+    }
+
+    function openChatAndAsk(productName,imageUrl){
+        openChatWindow();
+        const chatBox = document.getElementById('chat-messages');
+        chatBox.innerHTML += `
+        <p class="user-msg">
+            <img src="${imageUrl}"
+            style="
+            width:120px;
+            border-radius:10px;
+            cursor:pointer;
+            ">
+        </p>
+        `;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+}
+
+</script>
+{% endblock %}
