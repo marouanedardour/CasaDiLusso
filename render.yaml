@@ -1,0 +1,22 @@
+databases:
+  - name: casadilusso-db
+    plan: free
+    databaseName: casadilusso
+    user: casadilusso
+
+services:
+  - type: web
+    plan: free
+    name: casadilusso
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn core.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: casadilusso-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
